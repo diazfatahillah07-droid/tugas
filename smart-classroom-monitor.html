@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruang Kelas 7B — Pemantauan Lingkungan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #F2EFE4;
+    --panel: #FFFFFF;
+    --panel-2: #EAE5D6;
+    --ink: #22301F;
+    --ink-soft: #5B6154;
+    --line: #D7D0BC;
+    --wood: #A9682F;
+    --slate: #4E7A8C;
+    --good: #5C8A63;
+    --good-bg: #E4EEE1;
+    --warn: #C68A22;
+    --warn-bg: #F5E9CE;
+    --bad: #B44B3B;
+    --bad-bg: #F3DFD8;
+    --board: #2D4A3E;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #16201B;
+      --panel: #1F2B24;
+      --panel-2: #253328;
+      --ink: #ECE7D8;
+      --ink-soft: #A9B3A2;
+      --line: #384539;
+      --wood: #CB925A;
+      --slate: #7FB0C2;
+      --good: #86B98C;
+      --good-bg: #26362A;
+      --warn: #E0B45B;
+      --warn-bg: #3A3220;
+      --bad: #E08672;
+      --bad-bg: #3C2621;
+      --board: #0F1A15;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16201B;
+    --panel: #1F2B24;
+    --panel-2: #253328;
+    --ink: #ECE7D8;
+    --ink-soft: #A9B3A2;
+    --line: #384539;
+    --wood: #CB925A;
+    --slate: #7FB0C2;
+    --good: #86B98C;
+    --good-bg: #26362A;
+    --warn: #E0B45B;
+    --warn-bg: #3A3220;
+    --bad: #E08672;
+    --bad-bg: #3C2621;
+    --board: #0F1A15;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  h1, h2, h3, .display {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  /* ---------- Header ---------- */
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .top-left h1 { font-size: 28px; }
+  .top-left p { color: var(--ink-soft); margin: 6px 0 0; font-size: 14px; max-width: 46ch; }
+  .top-right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .clock { font-size: 22px; font-weight: 600; }
+  .live-dot-row {
+    display: flex; align-items: center; gap: 6px; justify-content: flex-end;
+    font-size: 12.5px; color: var(--ink-soft); margin-top: 4px;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--good);
+    box-shadow: 0 0 0 0 rgba(92,138,99,.6);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(92,138,99,.5); }
+    70% { box-shadow: 0 0 0 6px rgba(92,138,99,0); }
+    100% { box-shadow: 0 0 0 0 rgba(92,138,99,0); }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 0;
+    background: var(--board);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 34px;
+  }
+  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; } }
+  .hero-diagram { padding: 22px 10px 10px; }
+  .hero-diagram svg { width: 100%; height: auto; display: block; }
+  .hero-status {
+    background: #EDE7D3;
+    color: var(--board);
+    padding: 30px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .hero-status .eyebrow { font-size: 13px; color: #5B6154; }
+  .hero-status .status-word {
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    font-weight: 600;
+    margin: 6px 0 10px;
+    line-height: 1.05;
+  }
+  .status-word.good { color: #3F6B47; }
+  .status-word.warn { color: #9C6C13; }
+  .status-word.bad { color: #96382A; }
+  .hero-status .desc { font-size: 14.5px; color: #4A5142; max-width: 42ch; }
+  .hero-status .updated { margin-top: 18px; font-size: 12.5px; color: #74795F; }
+
+  /* ---------- Metric grid ---------- */
+  .section-title {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 0 0 14px;
+  }
+  .section-title h2 { font-size: 19px; }
+  .section-title span { font-size: 13px; color: var(--ink-soft); }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 34px;
+  }
+  @media (max-width: 900px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .metrics { grid-template-columns: 1fr; } }
+  .metric {
+    background: var(--panel);
+    padding: 18px 16px;
+    border-left: 3px solid var(--good);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 150px;
+  }
+  .metric.warn { border-left-color: var(--warn); }
+  .metric.bad { border-left-color: var(--bad); }
+  .metric .label { font-size: 13px; color: var(--ink-soft); }
+  .metric .value-row { display: flex; align-items: baseline; gap: 5px; margin: 2px 0 2px; }
+  .metric .value { font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .metric .unit { font-size: 13px; color: var(--ink-soft); }
+  .metric .pill {
+    align-self: flex-start;
+    font-size: 11.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--good-bg); color: var(--good);
+    margin-bottom: 8px;
+  }
+  .metric.warn .pill { background: var(--warn-bg); color: var(--warn); }
+  .metric.bad .pill { background: var(--bad-bg); color: var(--bad); }
+  .metric svg.spark { width: 100%; height: 30px; margin-top: auto; }
+
+  /* ---------- Chart panel ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 22px;
+    margin-bottom: 34px;
+  }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tab {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    padding: 7px 13px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .tab.active { background: var(--board); color: #EDE7D3; border-color: var(--board); }
+  .chart-holder { height: 280px; }
+
+  /* ---------- Two-column: log + reference ---------- */
+  .cols {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 22px;
+  }
+  @media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+
+  .log-list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; }
+  .log-list li {
+    display: flex; gap: 12px; padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13.5px;
+  }
+  .log-list li:last-child { border-bottom: none; }
+  .log-time { color: var(--ink-soft); font-variant-numeric: tabular-nums; min-width: 52px; }
+  .log-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; background: var(--good); }
+  .log-dot.warn { background: var(--warn); }
+  .log-dot.bad { background: var(--bad); }
+  .log-empty { color: var(--ink-soft); font-size: 13.5px; padding: 6px 0; }
+
+  table.ref { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.ref th, table.ref td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  table.ref th { color: var(--ink-soft); font-weight: 500; font-size: 12.5px; }
+  table.ref td.tag { white-space: nowrap; }
+  .tag-good { color: var(--good); } .tag-warn { color: var(--warn); } .tag-bad { color: var(--bad); }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="top-left">
+      <h1>Ruang Kelas 7B</h1>
+      <p>Pemantauan kondisi lingkungan secara langsung — suhu, kelembapan, kualitas udara, cahaya, dan kebisingan.</p>
+    </div>
+    <div class="top-right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="live-dot-row"><span class="live-dot"></span><span id="dateLabel">Memuat…</span></div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-diagram">
+      <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" aria-label="Denah ruang kelas dengan titik sensor">
+        <!-- floor -->
+        <rect x="0" y="300" width="640" height="60" fill="#233A30"/>
+        <!-- board -->
+        <rect x="40" y="40" width="150" height="90" rx="3" fill="#1B2A22" stroke="#4E7A8C" stroke-width="1.5"/>
+        <text x="115" y="90" text-anchor="middle" fill="#7FA6B2" font-family="IBM Plex Sans" font-size="11">papan tulis</text>
+        <!-- window -->
+        <rect x="480" y="55" width="120" height="150" fill="none" stroke="#4E7A8C" stroke-width="2" opacity="0.5"/>
+        <line x1="540" y1="55" x2="540" y2="205" stroke="#4E7A8C" stroke-width="1.5" opacity="0.5"/>
+        <line x1="480" y1="130" x2="600" y2="130" stroke="#4E7A8C" stroke-width="1.5" opacity="0.5"/>
+        <!-- desks (rows) -->
+        <g fill="#3A4F42">
+          <rect x="230" y="150" width="46" height="26" rx="2"/><rect x="300" y="150" width="46" height="26" rx="2"/><rect x="370" y="150" width="46" height="26" rx="2"/>
+          <rect x="230" y="200" width="46" height="26" rx="2"/><rect x="300" y="200" width="46" height="26" rx="2"/><rect x="370" y="200" width="46" height="26" rx="2"/>
+          <rect x="230" y="250" width="46" height="26" rx="2"/><rect x="300" y="250" width="46" height="26" rx="2"/><rect x="370" y="250" width="46" height="26" rx="2"/>
+        </g>
+        <!-- sensor markers -->
+        <g font-family="IBM Plex Sans" font-size="11" fill="#EDE7D3">
+          <!-- suhu: near window wall -->
+          <circle cx="470" cy="70" r="5" fill="#C68A22" id="dot-suhu"/>
+          <line x1="470" y1="70" x2="440" y2="45" stroke="#C68A22" stroke-width="1"/>
+          <text x="436" y="40" text-anchor="end" id="lbl-suhu">Suhu —°C</text>
+
+          <!-- kelembaban: opposite wall -->
+          <circle cx="470" cy="150" r="5" fill="#4E7A8C" id="dot-lembab"/>
+          <line x1="470" y1="150" x2="580" y2="150" stroke="#4E7A8C" stroke-width="1"/>
+          <text x="586" y="154" id="lbl-lembab">Lembap —%</text>
+
+          <!-- CO2: ceiling center -->
+          <circle cx="330" cy="60" r="5" fill="#5C8A63" id="dot-co2"/>
+          <line x1="330" y1="60" x2="330" y2="20" stroke="#5C8A63" stroke-width="1"/>
+          <text x="330" y="14" text-anchor="middle" id="lbl-co2">CO₂ — ppm</text>
+
+          <!-- cahaya: near window -->
+          <circle cx="470" cy="230" r="5" fill="#E0B45B" id="dot-cahaya"/>
+          <line x1="470" y1="230" x2="580" y2="250" stroke="#E0B45B" stroke-width="1"/>
+          <text x="586" y="254" id="lbl-cahaya">Cahaya — lux</text>
+
+          <!-- kebisingan: center of room -->
+          <circle cx="330" cy="220" r="5" fill="#B44B3B" id="dot-bising"/>
+          <line x1="330" y1="220" x2="330" y2="280" stroke="#B44B3B" stroke-width="1"/>
+          <text x="330" y="296" text-anchor="middle" id="lbl-bising">Bising — dB</text>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-status">
+      <div class="eyebrow">Status ruangan saat ini</div>
+      <div class="status-word good" id="overallWord">Memuat…</div>
+      <div class="desc" id="overallDesc">Sensor sedang mengumpulkan data awal.</div>
+      <div class="updated" id="overallUpdated"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><h2>Pembacaan sensor</h2><span id="metricsSub">5 titik sensor aktif</span></div>
+  <div class="metrics" id="metricsGrid"></div>
+
+  <div class="panel">
+    <div class="section-title" style="margin-bottom:4px;"><h2>Tren 12 jam terakhir</h2><span>Diperbarui otomatis tiap beberapa detik</span></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="chart-holder"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <div class="section-title"><h2>Riwayat peringatan</h2><span id="logCount">0 catatan</span></div>
+      <ul class="log-list" id="logList"><li class="log-empty">Belum ada peringatan tercatat.</li></ul>
+    </div>
+    <div class="panel">
+      <div class="section-title"><h2>Ambang batas acuan</h2><span>SNI &amp; kenyamanan ruang belajar</span></div>
+      <table class="ref">
+        <thead><tr><th>Parameter</th><th>Nyaman</th><th>Waspada</th></tr></thead>
+        <tbody>
+          <tr><td>Suhu</td><td class="tag tag-good">22–26 °C</td><td class="tag tag-warn">&lt;20 / &gt;28 °C</td></tr>
+          <tr><td>Kelembapan</td><td class="tag tag-good">40–60 %</td><td class="tag tag-warn">&lt;30 / &gt;70 %</td></tr>
+          <tr><td>CO₂</td><td class="tag tag-good">&lt; 800 ppm</td><td class="tag tag-warn">800–1200 ppm</td></tr>
+          <tr><td>Cahaya</td><td class="tag tag-good">300–500 lux</td><td class="tag tag-warn">&lt;150 / &gt;750 lux</td></tr>
+          <tr><td>Kebisingan</td><td class="tag tag-good">&lt; 55 dB</td><td class="tag tag-warn">55–70 dB</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <span>Data pada dasbor ini disimulasikan untuk keperluan demonstrasi.</span>
+    <span id="footClock"></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const METRICS = [
+    { key:'suhu', label:'Suhu', unit:'°C', decimals:1, good:[22,26], warn:[20,28], color:'#C68A22' },
+    { key:'lembab', label:'Kelembapan', unit:'%', decimals:0, good:[40,60], warn:[30,70], color:'#4E7A8C' },
+    { key:'co2', label:'Kualitas udara (CO₂)', unit:'ppm', decimals:0, good:[400,800], warn:[0,1200], color:'#5C8A63' },
+    { key:'cahaya', label:'Cahaya', unit:'lux', decimals:0, good:[300,500], warn:[150,750], color:'#E0B45B' },
+    { key:'bising', label:'Kebisingan', unit:'dB', decimals:0, good:[0,55], warn:[0,70], color:'#B44B3B' },
+  ];
+
+  function statusOf(m, v){
+    if (v >= m.good[0] && v <= m.good[1]) return 'good';
+    if (v >= m.warn[0] && v <= m.warn[1]) return 'warn';
+    return 'bad';
+  }
+  function statusLabel(s){ return s==='good' ? 'Nyaman' : s==='warn' ? 'Waspada' : 'Tidak sehat'; }
+
+  // ---- build 12h history (30-min steps) ending "now" ----
+  const STEP_MIN = 30;
+  const POINTS = 25;
+  function baseCurve(key, i, total){
+    // i=0 is earliest (12h ago), i=total-1 is now. Simple diurnal-ish pattern.
+    const t = i/(total-1);
+    switch(key){
+      case 'suhu': return 23 + Math.sin(t*Math.PI)*3.2;
+      case 'lembab': return 55 - Math.sin(t*Math.PI)*10;
+      case 'co2': return 450 + Math.sin(t*Math.PI)*450 * (0.4+0.6*t);
+      case 'cahaya': return 200 + Math.sin(t*Math.PI)*260;
+      case 'bising': return 42 + Math.sin(t*Math.PI*2)*14 + t*10;
+    }
+  }
+
+  const now = new Date();
+  const history = {}; // key -> array of {t: Date, v: number}
+  const labels = [];
+  for (let i=0;i<POINTS;i++){
+    const d = new Date(now.getTime() - (POINTS-1-i)*STEP_MIN*60000);
+    labels.push(d);
+  }
+  METRICS.forEach(m=>{
+    history[m.key] = labels.map((d,i)=>{
+      const v = baseCurve(m.key, i, POINTS) + (Math.random()-0.5)*(m.key==='co2'?40:m.key==='cahaya'?20:m.key==='bising'?3:1);
+      return { t:d, v: Math.max(0,v) };
+    });
+  });
+
+  function fmtTime(d){ return d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}); }
+  function fmtDate(d){ return d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long'}); }
+
+  // ---- DOM refs ----
+  const metricsGrid = document.getElementById('metricsGrid');
+  const logList = document.getElementById('logList');
+  const logCount = document.getElementById('logCount');
+  const clockEl = document.getElementById('clock');
+  const footClock = document.getElementById('footClock');
+  const dateLabel = document.getElementById('dateLabel');
+  const overallWord = document.getElementById('overallWord');
+  const overallDesc = document.getElementById('overallDesc');
+  const overallUpdated = document.getElementById('overallUpdated');
+
+  let logEntries = [];
+  let prevStatus = {};
+
+  function sparkPath(values, w, h){
+    const min = Math.min(...values), max = Math.max(...values);
+    const range = (max-min) || 1;
+    return values.map((v,i)=>{
+      const x = (i/(values.length-1))*w;
+      const y = h - ((v-min)/range)*h;
+      return (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+  }
+
+  function renderMetrics(){
+    metricsGrid.innerHTML = '';
+    METRICS.forEach(m=>{
+      const series = history[m.key];
+      const latest = series[series.length-1].v;
+      const prev = series[series.length-2] ? series[series.length-2].v : latest;
+      const s = statusOf(m, latest);
+      const arrow = latest > prev+0.05 ? '↑' : latest < prev-0.05 ? '↓' : '→';
+
+      const el = document.createElement('div');
+      el.className = 'metric ' + (s!=='good'?s:'');
+      el.innerHTML = `
+        <span class="pill">${statusLabel(s)}</span>
+        <div class="label">${m.label}</div>
+        <div class="value-row">
+          <span class="value">${latest.toFixed(m.decimals)}</span>
+          <span class="unit">${m.unit} ${arrow}</span>
+        </div>
+        <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+          <path d="${sparkPath(series.slice(-12).map(p=>p.v),100,26)}" fill="none" stroke="${m.color}" stroke-width="2"/>
+        </svg>
+      `;
+      metricsGrid.appendChild(el);
+
+      // update hero diagram labels
+      const dot = document.getElementById('dot-' + (m.key==='lembab'?'lembab':m.key));
+      const lbl = document.getElementById('lbl-' + (m.key==='lembab'?'lembab':m.key));
+      if (lbl) lbl.textContent = m.label.split(' ')[0] + ' ' + latest.toFixed(m.decimals) + m.unit.replace('ppm',' ppm').trim();
+      if (dot) dot.setAttribute('fill', s==='good' ? '#5C8A63' : s==='warn' ? '#E0B45B' : '#B44B3B');
+
+      if (prevStatus[m.key] && prevStatus[m.key] !== s){
+        addLog(m.label + ' berubah ke status "' + statusLabel(s) + '" (' + latest.toFixed(m.decimals) + ' ' + m.unit + ')', s);
+      }
+      prevStatus[m.key] = s;
+    });
+
+    // overall
+    const statuses = METRICS.map(m=> statusOf(m, history[m.key][history[m.key].length-1].v));
+    const worst = statuses.includes('bad') ? 'bad' : statuses.includes('warn') ? 'warn' : 'good';
+    overallWord.className = 'status-word ' + worst;
+    overallWord.textContent = worst==='good' ? 'Nyaman untuk belajar' : worst==='warn' ? 'Perlu perhatian' : 'Kondisi tidak sehat';
+    overallDesc.textContent = worst==='good'
+      ? 'Seluruh parameter berada dalam rentang nyaman. Tidak ada tindakan yang diperlukan.'
+      : worst==='warn'
+      ? 'Satu atau lebih parameter mendekati batas. Pertimbangkan membuka jendela atau menyalakan sirkulasi udara.'
+      : 'Satu atau lebih parameter melewati ambang aman. Disarankan tindakan segera (ventilasi, pendinginan, atau evakuasi kebisingan).';
+    overallUpdated.textContent = 'Terakhir diperbarui ' + fmtTime(new Date());
+  }
+
+  function addLog(text, status){
+    logEntries.unshift({ time: new Date(), text, status });
+    logEntries = logEntries.slice(0, 30);
+    renderLog();
+  }
+  function renderLog(){
+    if (logEntries.length===0){
+      logList.innerHTML = '<li class="log-empty">Belum ada peringatan tercatat.</li>';
+    } else {
+      logList.innerHTML = logEntries.map(e=>`
+        <li><span class="log-dot ${e.status!=='good'?e.status:''}"></span>
+        <span class="log-time">${fmtTime(e.time)}</span>
+        <span>${e.text}</span></li>
+      `).join('');
+    }
+    logCount.textContent = logEntries.length + ' catatan';
+  }
+
+  // ---- chart ----
+  let activeKey = 'suhu';
+  const tabsEl = document.getElementById('tabs');
+  METRICS.forEach(m=>{
+    const b = document.createElement('button');
+    b.className = 'tab' + (m.key===activeKey?' active':'');
+    b.textContent = m.label;
+    b.onclick = ()=>{ activeKey = m.key; [...tabsEl.children].forEach(c=>c.classList.remove('active')); b.classList.add('active'); updateChart(); };
+    tabsEl.appendChild(b);
+  });
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  let chart;
+  function buildChart(){
+    const m = METRICS.find(x=>x.key===activeKey);
+    const series = history[activeKey];
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series.map(p=>fmtTime(p.t)),
+        datasets: [{
+          label: m.label,
+          data: series.map(p=>p.v),
+          borderColor: m.color,
+          backgroundColor: m.color + '22',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display:false } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 7, color: getComputedStyle(document.body).getPropertyValue('--ink-soft') }, grid: { display:false } },
+          y: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--ink-soft') }, grid: { color: getComputedStyle(document.body).getPropertyValue('--line') } }
+        }
+      }
+    });
+  }
+  function updateChart(){
+    const m = METRICS.find(x=>x.key===activeKey);
+    const series = history[activeKey];
+    chart.data.labels = series.map(p=>fmtTime(p.t));
+    chart.data.datasets[0].data = series.map(p=>p.v);
+    chart.data.datasets[0].label = m.label;
+    chart.data.datasets[0].borderColor = m.color;
+    chart.data.datasets[0].backgroundColor = m.color + '22';
+    chart.update();
+  }
+
+  // ---- live simulation tick ----
+  function tick(){
+    const t = new Date();
+    METRICS.forEach(m=>{
+      const series = history[m.key];
+      const last = series[series.length-1].v;
+      const driftScale = m.key==='co2' ? 25 : m.key==='cahaya' ? 15 : m.key==='bising' ? 3 : m.key==='lembab' ? 1.2 : 0.4;
+      let next = last + (Math.random()-0.5)*driftScale;
+      const floor = 0, ceil = m.key==='co2' ? 2000 : m.key==='cahaya' ? 1000 : m.key==='bising' ? 100 : m.key==='lembab' ? 100 : 45;
+      next = Math.min(ceil, Math.max(floor, next));
+      series.push({ t, v: next });
+      if (series.length > POINTS) series.shift();
+    });
+    renderMetrics();
+    updateChart();
+  }
+
+  function tickClock(){
+    const now = new Date();
+    const s = now.toLocaleTimeString('id-ID');
+    clockEl.textContent = s;
+    footClock.textContent = fmtDate(now) + ' · ' + s;
+    dateLabel.textContent = fmtDate(now);
+  }
+
+  buildChart();
+  renderMetrics();
+  renderLog();
+  tickClock();
+  setInterval(tickClock, 1000);
+  setInterval(tick, 4000);
+})();
+</script>
+</body>
+</html>
